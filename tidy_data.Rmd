@@ -9,3 +9,102 @@ output: github_document
 library(tidyverse)
 ```
 
+## PULSE data
+
+```{r}
+pulse_df=
+  haven::read_sas("./public_pulse_data.sas7bdat")|>
+  janitor::clean_names()
+```
+
+
+```{r}
+pulse_df=
+  haven::read_sas("./public_pulse_data.sas7bdat")|>
+  janitor::clean_names()|>
+  ## pivot_longer change data from wide format to long format
+  pivot_longer(
+    bdi_score_bl:bdi_score_12m,
+    names_to="visit",
+    values_to="bdi_score"
+  )
+```
+
+```{r}
+pulse_df=
+  haven::read_sas("./public_pulse_data.sas7bdat")|>
+  janitor::clean_names()|>
+  ## pivot_longer change data from wide format to long format
+  pivot_longer(
+    bdi_score_bl:bdi_score_12m,
+    names_to="visit",
+    values_to="bdi_score",
+    names_prefix="bdi_score_"
+  )
+#clean the same prefix we already know and don't want to show in the coloum
+```
+
+replace variable using mutate and replace
+
+```{r}
+pulse_df=
+  haven::read_sas("./public_pulse_data.sas7bdat")|>
+  janitor::clean_names()|>
+  ## pivot_longer change data from wide format to long format
+  pivot_longer(
+    bdi_score_bl:bdi_score_12m,
+    names_to="visit",
+    values_to="bdi_score",
+    names_prefix="bdi_score_"
+  )|>
+  mutate(
+    visit=replace(visit,visit=="bl","00m")
+  )
+```
+
+litters data
+
+```{r}
+litters_df=
+  read.csv("./FAS_litters.csv")|>
+  janitor::clean_names()|>
+  select(litter_number,gd0_weight,gd18_weight)|>
+  pivot_longer(
+    gd0_weight:gd18_weight,
+    names_to="gd",
+    values_to="weight",
+    names_prefix="gd"
+  )|>
+  mutate(
+    gd=replace(gd,gd=="0_weight","0")
+  )
+# there is no names_suffix 
+```
+or more clearly
+```{r}
+litters_df=
+  read.csv("./FAS_litters.csv")|>
+  janitor::clean_names()|>
+  select(litter_number,gd0_weight,gd18_weight)|>
+  pivot_longer(
+    gd0_weight:gd18_weight,
+    names_to="gd",
+    values_to="weight",
+    names_prefix="gd"
+  )|>
+  mutate(
+    gd=case_match(
+      gd,
+      "0_weight"~0,
+      "18_weight"~18
+    )
+  )
+# case when function is also good for this purpose
+```
+
+## binding 
+
+
+
+
+
